@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"log"
 
 	"github.com/rudyjcruz831/affordAbode_backend/model"
 	"github.com/rudyjcruz831/affordAbode_backend/util/errors"
@@ -10,14 +11,14 @@ import (
 // userService acts as a struct for injecting an implementation of UserRepository
 // for use in service methods
 type userService struct {
-	// UserRepository model.UserRepository
+	UserRepository model.UserRepository
 	// DocsRepository  model.DocsRepository
 }
 
 // USConfig will hold repositories that will eventually be injected into this
 // this service layer
 type USConfig struct {
-	// UserRepository model.UserRepository
+	UserRepository model.UserRepository
 	// DocsRepository  model.DocsRepository
 }
 
@@ -25,92 +26,92 @@ type USConfig struct {
 // initializing a UserService with its repository layer dependencies
 func NewUserService(c *USConfig) model.UserService {
 	return &userService{
-		// UserRepository: c.UserRepository,
+		UserRepository: c.UserRepository,
 		// DocsRepository:  c.DocsRepository,
 	}
 }
 
 // Get retrieves a user based on their ID
-// func (s *userService) Get(ctx context.Context, id string) (*model.Users, *errors.MathSheetsError) {
-// 	u, err := s.UserRepository.FindByID(ctx, id)
-// 	return u, err
-// }
+func (s *userService) Get(ctx context.Context, id string) (*model.Users, *errors.AffordAbodeError) {
+	u, err := s.UserRepository.FindByID(ctx, id)
+	return u, err
+}
 
 // Signup reaches our to a UserRepository to verify the
 // email address is available and signs up the user if this is the case
-// func (s *userService) Signup(ctx context.Context, u *model.Users) *errors.MathSheetsError {
-// 	pw, err := hashPassword(u.Password)
-// 	if err != nil {
-// 		log.Printf("Unable to signup user for email: %v\n", u.Email)
-// 		return errors.NewInternalServerError("")
-// 	}
-// 	u.Password = pw
-// 	u.Role = "user"
-// 	if afordAbodeErr := s.UserRepository.Create(ctx, u); afordAbodeErr != nil {
-// 		log.Printf("UserRepository return error: %v", afordAbodeErr)
-// 		return afordAbodeErr
-// 	}
+func (s *userService) Signup(ctx context.Context, u *model.Users) *errors.AffordAbodeError {
+	pw, err := hashPassword(u.Password)
+	if err != nil {
+		log.Printf("Unable to signup user for email: %v\n", u.Email)
+		return errors.NewInternalServerError("")
+	}
+	u.Password = pw
+	u.Role = "user"
+	if mathShtErr := s.UserRepository.Create(ctx, u); mathShtErr != nil {
+		log.Printf("UserRepository return error: %v", mathShtErr)
+		return mathShtErr
+	}
 
-// 	// If we get around to adding events, we'd Publish it here
-// 	// err := s.EventsBroker.PublishUserUpdated(u, true)
+	// If we get around to adding events, we'd Publish it here
+	// err := s.EventsBroker.PublishUserUpdated(u, true)
 
-// 	// if err != nil {
-// 	// 	return nil, apperrors.NewInternal()
-// 	// }
+	// if err != nil {
+	// 	return nil, apperrors.NewInternal()
+	// }
 
-// 	return nil
-// }
+	return nil
+}
 
 // Signin reaches our to a UserRepository to verify the
-// // email address is available and signs up the user if this is the case
-// func (s *userService) Signin(ctx context.Context, u *model.Users) (*model.Users, *errors.MathSheetsError) {
-// 	// panic("Sign In Method not implemented")
-// 	uFetched, afordAbodeErr := s.UserRepository.FindByEmail(ctx, u.Email)
+// email address is available and signs up the user if this is the case
+func (s *userService) Signin(ctx context.Context, u *model.Users) (*model.Users, *errors.AffordAbodeError) {
+	// panic("Sign In Method not implemented")
+	uFetched, MathShtErr := s.UserRepository.FindByEmail(ctx, u.Email)
 
-// 	// Will return NotAuthorized to client to omit details of why
-// 	if afordAbodeErr != nil {
-// 		log.Printf("FindByEmail return error : %v", afordAbodeErr)
-// 		return nil, errors.NewAuthorization("Invalid email and password combination")
-// 	}
+	// Will return NotAuthorized to client to omit details of why
+	if MathShtErr != nil {
+		log.Printf("FindByEmail return error : %v", MathShtErr)
+		return nil, errors.NewAuthorization("Invalid email and password combination")
+	}
 
-// 	match, err := comparePasswords(uFetched.Password, u.Password)
+	match, err := comparePasswords(uFetched.Password, u.Password)
 
-// 	if err != nil {
-// 		log.Printf("comparePassword return error %v", err)
-// 		return nil, errors.NewInternalServerError("")
-// 	}
+	if err != nil {
+		log.Printf("comparePassword return error %v", err)
+		return nil, errors.NewInternalServerError("")
+	}
 
-// 	if !match {
-// 		log.Println("Match was false return error")
-// 		return nil, errors.NewAuthorization("Invalid email and password combination")
-// 	}
+	if !match {
+		log.Println("Match was false return error")
+		return nil, errors.NewAuthorization("Invalid email and password combination")
+	}
 
-// 	return uFetched, nil
-// }
+	return uFetched, nil
+}
 
 // Update Details reaches out
-// func (s *userService) UpdateDetails(ctx context.Context, u *model.Users) *errors.MathSheetsError {
-// 	// Update user in UserRepository
-// 	afordAbodeErr := s.UserRepository.Update(ctx, u)
+func (s *userService) UpdateDetails(ctx context.Context, u *model.Users) *errors.AffordAbodeError {
+	// Update user in UserRepository
+	MathShtErr := s.UserRepository.Update(ctx, u)
 
-// 	if afordAbodeErr != nil {
-// 		return afordAbodeErr
-// 	}
+	if MathShtErr != nil {
+		return MathShtErr
+	}
 
-// 	// // Publish user updated nats streaming server // kafca
-// 	// err = s.EventsBroker.PublishUserUpdated(u, false)
-// 	// if err != nil {
-// 	// 	return errors.NewInternal()
-// 	// }
+	// // Publish user updated nats streaming server // kafca
+	// err = s.EventsBroker.PublishUserUpdated(u, false)
+	// if err != nil {
+	// 	return errors.NewInternal()
+	// }
 
-// 	return nil
-// }
+	return nil
+}
 
-// func (s *userService) DeleteUser(ctx context.Context, id string) *errors.MathSheetsError {
-// 	// panic("Delete user service")
-// 	mathSheetsErr := s.UserRepository.Delete(ctx, id)
-// 	return mathSheetsErr
-// }
+func (s *userService) DeleteUser(ctx context.Context, id string) *errors.AffordAbodeError {
+	// panic("Delete user service")
+	mathSheetsErr := s.UserRepository.Delete(ctx, id)
+	return mathSheetsErr
+}
 
 // Using google to sign in user if no user will be created calling the repo
 func (s *userService) GoogleSignin(ctx context.Context, code string) (*model.Users, *errors.AffordAbodeError) {
@@ -122,79 +123,18 @@ func (s *userService) GoogleSignin(ctx context.Context, code string) (*model.Use
 		return nil, afordAbodeErr
 	}
 
-	// uFetched, afordAbodeErr := s.UserRepository.FindByEmail(ctx, u.Email)
-	// if afordAbodeErr != nil {
-	// 	if afordAbodeErr.Status == 404 {
-	// 		u.Role = "user"
-	// 		if afordAbodeErr = s.UserRepository.Create(ctx, u); afordAbodeErr != nil {
-	// 			return nil, afordAbodeErr
-	// 		}
-	// 		return u, nil
-	// 	} else {
-	// 		return nil, afordAbodeErr
-	// 	}
-	// }
+	uFetched, afordAbodeErr := s.UserRepository.FindByEmail(ctx, u.Email)
+	if afordAbodeErr != nil {
+		if afordAbodeErr.Status == 404 {
+			u.Role = "user"
+			if afordAbodeErr = s.UserRepository.Create(ctx, u); afordAbodeErr != nil {
+				return nil, afordAbodeErr
+			}
+			return u, nil
+		} else {
+			return nil, afordAbodeErr
+		}
+	}
 
-	return u, nil
+	return uFetched, nil
 }
-
-// func (s *userService) SetProfileImage(ctx context.Context, id string, imageFileHeader *multipart.FileHeader) (*model.Users, *errors.MathSheetsError) {
-// 	// TODO - testing for this service also I will need to come in here and make sure if I am even adding an image to user
-// 	u, err := s.UserRepository.FindByID(ctx, id)
-
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	objName, err := objNameFromURL(u.Image)
-
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	imageFile, err1 := imageFileHeader.Open()
-// 	if err1 != nil {
-// 		log.Printf("Failed to open image file: %v\n", err1)
-// 		return nil, errors.NewInternalServerError("")
-// 	}
-
-// 	// Upload user's image to ImageRepository
-// 	// Possibly received updated imageURL
-// 	imageURL, afordAbodeErr := s.ImageRepository.UpdateProfile(ctx, objName, imageFile)
-
-// 	if afordAbodeErr != nil {
-// 		log.Printf("Unable to upload image to cloud provider: %v\n", afordAbodeErr)
-// 		return nil, afordAbodeErr
-// 	}
-
-// 	updatedUser, err := s.UserRepository.UpdateImage(ctx, u, imageURL)
-
-// 	if err != nil {
-// 		log.Printf("Unable to update imageURL: %v\n", err)
-// 		return nil, err
-// 	}
-
-// 	return updatedUser, nil
-// }
-
-// This function has to do with the image as well
-// func objNameFromURL(imageURL string) (string, *errors.MathSheetsError) {
-// 	// if user doesn't have imageURL - create one
-// 	// otherwise, extract last part of URL to get cloud storage object name
-// 	if imageURL == "" {
-// 		objID, _ := uuid.NewRandom()
-// 		return objID.String(), nil
-// 	}
-
-// 	// split off last part of URL, which is the image's storage object ID
-// 	urlPath, err := url.Parse(imageURL)
-
-// 	if err != nil {
-// 		log.Printf("Failed to parse objectName from imageURL: %v\n", imageURL)
-// 		return "", errors.NewInternalServerError("")
-// 	}
-
-// 	// get "path" of url (everything after domain)
-// 	// then get "base", the last part
-// 	return path.Base(urlPath.Path), nil
-// }

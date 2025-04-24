@@ -16,9 +16,11 @@ func StartApp() {
 	// fmt.Println("Hello, World!")
 
 	//injection other services and add any env variables TODO: may need this for injecting the serverses later
-	// router, err := inject(ds) // remove ds for now becuse we don't have no db for now [router, err := inject(ds)]
-
-	router, err := inject() // remove ds for now becuse we don't have no db for now [router, err := inject(ds)]
+	ds, err := initDS()
+	if err != nil {
+		log.Fatalf("Failed to initialize data source: %v\n", err)
+	}
+	router, err := inject(ds) // remove ds for now becuse we don't have no db for now [router, err := inject(ds)]
 	if err != nil {
 		log.Fatalf("Failure to inject data source: %v\n", err)
 	}

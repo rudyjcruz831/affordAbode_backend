@@ -11,8 +11,8 @@ import (
 
 // Handler is a struct that handles HTTP requests and responses.
 type Handler struct {
-	UserService model.UserService
-	// TokenService model.TokenService
+	UserService  model.UserService
+	TokenService model.TokenService
 	MaxBodyBytes int64
 }
 
@@ -20,6 +20,7 @@ type Handler struct {
 type Config struct {
 	R                *gin.Engine
 	UserService      model.UserService
+	TokenService     model.TokenService
 	BaseURL          string
 	TimeoutDurations time.Duration
 	MaxBodyBytes     int64
@@ -28,7 +29,8 @@ type Config struct {
 // NewHandler creates a new instance of the Handler with the provided configuration.
 func NewHandler(c *Config) {
 	h := &Handler{
-		UserService: c.UserService,
+		UserService:  c.UserService,
+		TokenService: c.TokenService,
 	}
 
 	// Enable CORS middleware with the provided configuration.
