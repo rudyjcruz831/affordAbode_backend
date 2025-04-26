@@ -55,6 +55,7 @@ func NewHandler(c *Config) {
 	// g.POST("/user/signout", middleware.AuthUser(h.TokenService, h.UserService), h.SignOut)
 	// g.GET("/user/info", middleware.AuthUser(h.TokenService, h.UserService), h.UserInfo)
 	g.POST("/user/gogogle_signin", h.GoogleSignin)
+	g.POST("/user/signup", h.Signup)
 }
 
 func (h *Handler) Home(c *gin.Context) {
