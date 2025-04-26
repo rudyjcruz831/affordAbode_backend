@@ -49,14 +49,13 @@ func NewTokenService(c *TSConfig) model.TokenService {
 // NewPairForUser creates fresh id and refresh tokens for the current user
 // If a previous token is included, the previous token is removed from
 // the tokens repository
-
 func (s *tokenService) NewPairForUser(ctx context.Context, u *model.Users, prevTokenID string) (*model.TokenPair, *errors.AffordAbodeError) {
 
 	// delete user's current refresh token (used when refreshing idToken)
 	if prevTokenID != "" {
-		if mathSheetErr := s.TokenRepository.DeleteRefreshToken(ctx, u.ID, prevTokenID); mathSheetErr != nil {
+		if affordAbodeErr := s.TokenRepository.DeleteRefreshToken(ctx, u.ID, prevTokenID); affordAbodeErr != nil {
 			log.Printf("Could not delete previous refreshToken for uid: %v, tokenID: %v\n", u.ID, prevTokenID)
-			return nil, mathSheetErr
+			return nil, affordAbodeErr
 		}
 	}
 
@@ -65,22 +64,22 @@ func (s *tokenService) NewPairForUser(ctx context.Context, u *model.Users, prevT
 
 	if err != nil {
 		log.Printf("Error generating idToken for uid: %v. Error: %v\n", u.ID, err.Error())
-		mathSheetErr := errors.NewInternalServerError("error generating id token")
-		return nil, mathSheetErr
+		affordAbodeErr := errors.NewInternalServerError("error generating id token")
+		return nil, affordAbodeErr
 	}
 
 	refreshToken, err := generateRefreshToken(u.ID, s.RefreshSecret, s.RefreshExpirationSecs)
 
 	if err != nil {
 		log.Printf("Error generating refreshToken for uid: %v. Error: %v\n", u.ID, err.Error())
-		mathSheetErr := errors.NewInternalServerError("error creating refresh Token")
-		return nil, mathSheetErr
+		affordAbodeErr := errors.NewInternalServerError("error creating refresh Token")
+		return nil, affordAbodeErr
 	}
 
 	// store refresh tokens by calling TokenRepository methods
 	// set freshly minted refresh token to valid list
-	if mathSheetErr := s.TokenRepository.SetRefreshToken(ctx, u.ID, refreshToken.ID.String(), refreshToken.ExpiresIn); mathSheetErr != nil {
-		log.Printf("Error storing tokenID for uid: %v. Error: %v\n", u.ID, mathSheetErr)
+	if affordAbodeErr := s.TokenRepository.SetRefreshToken(ctx, u.ID, refreshToken.ID.String(), refreshToken.ExpiresIn); affordAbodeErr != nil {
+		log.Printf("Error storing tokenID for uid: %v. Error: %v\n", u.ID, affordAbodeErr)
 		return nil, errors.NewInternalServerError("")
 	}
 
@@ -93,8 +92,8 @@ func (s *tokenService) NewPairForUser(ctx context.Context, u *model.Users, prevT
 // Signout reaches out to the repository layer to delete all valid tokens for a user
 // TODO: test if correctly return id of idToken to use in blacklist add testing to token layer for BlackedListed
 func (s *tokenService) Signout(ctx context.Context, uid string) *errors.AffordAbodeError {
-	if mathSheetErr := s.TokenRepository.DeleteUserRefreshTokens(ctx, uid); mathSheetErr != nil {
-		return mathSheetErr
+	if affordAbodeErr := s.TokenRepository.DeleteUserRefreshTokens(ctx, uid); affordAbodeErr != nil {
+		return affordAbodeErr
 	}
 	return nil
 }

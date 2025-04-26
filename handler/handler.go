@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/rudyjcruz831/affordAbode_backend/handler/middleware"
 	"github.com/rudyjcruz831/affordAbode_backend/model"
 )
 
@@ -52,10 +53,13 @@ func NewHandler(c *Config) {
 	newg.GET("/", h.Home) // Home route
 	// Define routes and their corresponding handler functions.
 	// // newg.GET("/", h.Home) // Home route
-	// g.POST("/user/signout", middleware.AuthUser(h.TokenService, h.UserService), h.SignOut)
+	g.POST("/user/signout", middleware.AuthUser(h.TokenService, h.UserService), h.SignOut)
 	// g.GET("/user/info", middleware.AuthUser(h.TokenService, h.UserService), h.UserInfo)
 	g.POST("/user/gogogle_signin", h.GoogleSignin)
-	g.POST("/user/signup", h.Signup)
+	g.POST("/user/signup", h.SignUp)
+	g.POST("/user/signin", h.SignIn)
+	// TODO: need to see if this is correct
+	g.POST("/user/token", h.Tokens)
 }
 
 func (h *Handler) Home(c *gin.Context) {

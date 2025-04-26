@@ -19,7 +19,7 @@ type signupReq struct {
 }
 
 // Signup handler
-func (h *Handler) Signup(c *gin.Context) {
+func (h *Handler) SignUp(c *gin.Context) {
 	// panic("Sign up handler")
 	// define a variable to which we'll bind incoming
 	// json body, {email, password}
@@ -42,17 +42,17 @@ func (h *Handler) Signup(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	// UserService layer
-	mathSheetsErr := h.UserService.Signup(ctx, u)
-	if mathSheetsErr != nil {
-		log.Printf("Failed to sign up user: %v\n", mathSheetsErr)
-		c.JSON(mathSheetsErr.Status, mathSheetsErr)
+	affordAbodeErr := h.UserService.Signup(ctx, u)
+	if affordAbodeErr != nil {
+		log.Printf("Failed to sign up user: %v\n", affordAbodeErr)
+		c.JSON(affordAbodeErr.Status, affordAbodeErr)
 		return
 	}
 
 	// create token pair as strings
-	tokens, mathSheetsErr := h.TokenService.NewPairForUser(ctx, u, "")
-	if mathSheetsErr != nil {
-		log.Printf("Failed to create tokens for user: %v\n", mathSheetsErr)
+	tokens, affordAbodeErr := h.TokenService.NewPairForUser(ctx, u, "")
+	if affordAbodeErr != nil {
+		log.Printf("Failed to create tokens for user: %v\n", affordAbodeErr)
 
 		// logic to go into database and delete user
 		// when token NewPairForUser faileds
@@ -62,7 +62,7 @@ func (h *Handler) Signup(c *gin.Context) {
 			log.Printf("Token Creation failed and Deleting user also failed: %v", err)
 		}
 
-		c.JSON(mathSheetsErr.Status, mathSheetsErr)
+		c.JSON(affordAbodeErr.Status, affordAbodeErr)
 		return
 	}
 
