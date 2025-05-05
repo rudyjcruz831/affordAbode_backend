@@ -1,53 +1,59 @@
 package handler
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rudyjcruz831/affordAbode_backend/model"
 )
 
-// AuthCode ...
-type AuthCodeReq struct {
-	Code string `json:"code" binding:"required"`
+// SupabaseAuth represents the authentication data from Supabase
+type SupabaseAuth struct {
+	AccessToken  string `json:"access_token" binding:"required"`
+	RefreshToken string `json:"refresh_token" binding:"required"`
+	User         struct {
+		ID        string `json:"id"`
+		Email     string `json:"email"`
+		FirstName string `json:"first_name"`
+		LastName  string `json:"last_name"`
+	} `json:"user" binding:"required"`
 }
 
+// GoogleSignin handles the Supabase Google OAuth sign-in process
 func (h *Handler) GoogleSignin(c *gin.Context) {
-	// authCode struct
-	var req AuthCodeReq
+	var req SupabaseAuth
 
 	if ok := bindData(c, &req); !ok {
-		log.Println("binding data unsuccess")
+		log.Println("binding data unsuccessful")
 		return
 	}
+
 	ctx := c.Request.Context()
-	u, mathSheetsErr := h.UserService.GoogleSignin(ctx, req.Code)
-	if mathSheetsErr != nil {
-		log.Printf("Failed to sign up user using google: %v\n", mathSheetsErr)
-		c.JSON(mathSheetsErr.Status, mathSheetsErr)
+
+	// Create or update user in your database
+	u := &model.Users{
+		ID:        req.User.ID,
+		Email:     req.User.Email,
+		FirstName: req.User.FirstName,
+		LastName:  req.User.LastName,
+	}
+
+	// Create token pair for the user
+	tokens, affordAbodeErr := h.TokenService.NewPairForUser(ctx, u, "")
+	if affordAbodeErr != nil {
+		log.Printf("Failed to create tokens for user: %v\n", affordAbodeErr)
+		c.JSON(affordAbodeErr.Status, affordAbodeErr)
 		return
 	}
 
-	fmt.Println("User signed in successfully:", u)
-
-	// create token pair as strings
-	tokens, mathSheetsErr := h.TokenService.NewPairForUser(ctx, u, "")
-	if mathSheetsErr != nil {
-		log.Printf("Failed to create tokens for user: %v\n", mathSheetsErr)
-
-		// logic to go into database and delete user
-		// when token NewPairForUser faileds
-		err := h.UserService.DeleteUser(ctx, u.ID)
-		if err != nil {
-			log.Printf("Token Creation failed and Deleting user also failed: %v", err)
-		}
-
-		c.JSON(mathSheetsErr.Status, mathSheetsErr)
-		return
-	}
-
-	c.JSON(http.StatusCreated, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"tokens": tokens,
+		"user": gin.H{
+			"id":        u.ID,
+			"email":     u.Email,
+			"firstName": u.FirstName,
+			"lastName":  u.LastName,
+		},
 	})
 }

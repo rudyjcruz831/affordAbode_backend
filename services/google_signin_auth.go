@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -31,7 +30,6 @@ func auth(code string) (*model.Response, *model.Users, *errors.AffordAbodeError)
 	}
 
 	u := model.Users{
-		// ID:        tokID.ID,
 		Email:     tokID.Email,
 		FirstName: tokID.FirstName,
 		LastName:  tokID.LastName,
@@ -46,31 +44,25 @@ func auth(code string) (*model.Response, *model.Users, *errors.AffordAbodeError)
 		TokenType:   tok.TokenType,
 	}
 
-	// fmt.Println(u)
-	// fmt.Println(response)
-	fmt.Println(response.TokenType)
-
 	return &response, &u, nil
 }
 
 func getConfig() *oauth2.Config {
-	// Get the Client Id and Client secret stored in enviroment variables
-	clientID := os.Getenv("CLIENT_ID")
-	clientSecret := os.Getenv("CLIENT_SECRET")
-	// fmt.Println(clientID, clientSecret)
+	clientID := os.Getenv("GOOGLE_CLIENT_ID")
+	clientSecret := os.Getenv("GOOGLE_CLIENT_SECRET")
+	redirectURL := os.Getenv("GOOGLE_REDIRECT_URL")
 
-	// Build auth configuration instance
 	conf := &oauth2.Config{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
-		Scopes:       []string{"profile", "email", "openid"},
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  google.Endpoint.AuthURL,
-			TokenURL: google.Endpoint.TokenURL,
+		RedirectURL:  redirectURL,
+		Scopes: []string{
+			"https://www.googleapis.com/auth/userinfo.email",
+			"https://www.googleapis.com/auth/userinfo.profile",
+			"openid",
 		},
+		Endpoint: google.Endpoint,
 	}
-	// Don't know why but we need this to make it work
-	conf.RedirectURL = "postmessage"
 
 	return conf
 }
@@ -78,10 +70,10 @@ func getConfig() *oauth2.Config {
 func getTokenFromAuthCode(authCode string) (*oauth2.Token, *errors.AffordAbodeError) {
 	conf := getConfig()
 
-	// Exchange consumable authorization code for refresh token
+	// Exchange authorization code for token
 	tok, err := conf.Exchange(context.Background(), authCode)
 	if err != nil {
-		affordAbodeErr := errors.UnauthorizedError("getting token form authCode ---" + err.Error())
+		affordAbodeErr := errors.UnauthorizedError("getting token from authCode: " + err.Error())
 		return nil, affordAbodeErr
 	}
 
@@ -91,16 +83,17 @@ func getTokenFromAuthCode(authCode string) (*oauth2.Token, *errors.AffordAbodeEr
 func getUserInfoFromToken(token *oauth2.Token) ([]byte, *errors.AffordAbodeError) {
 	conf := getConfig()
 
-	client := conf.Client(oauth2.NoContext, token)
+	client := conf.Client(context.Background(), token)
 	resp, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
 	if err != nil {
-		affordAbodeErr := errors.UnauthorizedError("getting user from token ---" + err.Error())
+		affordAbodeErr := errors.UnauthorizedError("getting user info from token: " + err.Error())
 		return nil, affordAbodeErr
 	}
 	defer resp.Body.Close()
+
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		affordAbodeErr := errors.NewInternalServerError("Something went wrong on our end")
+		affordAbodeErr := errors.NewInternalServerError("error reading response body")
 		return nil, affordAbodeErr
 	}
 

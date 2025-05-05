@@ -46,7 +46,7 @@ func (s *userService) Signup(ctx context.Context, u *model.Users) *errors.Afford
 		return errors.NewInternalServerError("")
 	}
 	u.Password = pw
-	u.Role = "user"
+
 	if mathShtErr := s.UserRepository.Create(ctx, u); mathShtErr != nil {
 		log.Printf("UserRepository return error: %v", mathShtErr)
 		return mathShtErr
@@ -137,4 +137,17 @@ func (s *userService) GoogleSignin(ctx context.Context, code string) (*model.Use
 	}
 
 	return uFetched, nil
+}
+
+func (s *userService) Listing(ctx context.Context, listing *model.Listing) ([]model.Listing, *errors.AffordAbodeError) {
+	// panic("Listing service")
+	// TODO - testing for this service
+	list, err := fetchRentalListings(listing)
+	if err != nil {
+		log.Printf("Error fetching rental listing: %v\n", err)
+		return nil, errors.NewInternalServerError("Error fetching rental listing")
+	}
+
+	return list, nil
+
 }

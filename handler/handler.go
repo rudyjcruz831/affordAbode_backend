@@ -55,11 +55,13 @@ func NewHandler(c *Config) {
 	// // newg.GET("/", h.Home) // Home route
 	g.POST("/user/signout", middleware.AuthUser(h.TokenService, h.UserService), h.SignOut)
 	// g.GET("/user/info", middleware.AuthUser(h.TokenService, h.UserService), h.UserInfo)
-	g.POST("/user/gogogle_signin", h.GoogleSignin)
+	g.POST("/user/google", h.GoogleSignin)
 	g.POST("/user/signup", h.SignUp)
 	g.POST("/user/signin", h.SignIn)
 	// TODO: need to see if this is correct
 	g.POST("/user/token", h.Tokens)
+	g.POST("/user/listing", middleware.AuthUser(h.TokenService, h.UserService), h.CreateListing)
+	g.GET("/user/listing/1", h.TemporaryLocalListingHandler)
 }
 
 func (h *Handler) Home(c *gin.Context) {

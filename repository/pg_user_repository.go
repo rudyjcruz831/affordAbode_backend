@@ -17,6 +17,26 @@ type pGUserRepository struct {
 	DB *gorm.DB
 }
 
+type Metadata struct {
+	UserID    string     `json:"user_id"`
+	CreatedOn time.Time  `json:"created_on"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at"`
+}
+type UserCreate struct {
+	ID        string `json:"user_id" gorm:"column:user_id;primaryKey"`
+	Email     string `json:"email" binding:"required,email" gorm:"column:email;unique;not null"`
+	Username  string `json:"username" binding:"required" gorm:"column:username;unique;not null"`
+	Password  string `json:"password" binding:"required,gte=6,lte=30" gorm:"column:password"`
+	FirstName string `json:"first_name" gorm:"column:first_name"`
+	LastName  string `json:"last_name" gorm:"column:last_name"`
+	Role      string `json:"role" gorm:"column:user_role"`
+}
+
+func (UserCreate) TableName() string {
+	return "users"
+}
+
 // NewUserRepository is a factory for initializing User Repositories
 func NewUserRepository(db *gorm.DB) model.UserRepository {
 	return &pGUserRepository{
@@ -49,10 +69,49 @@ func (r *pGUserRepository) Create(ctx context.Context, u *model.Users) *errors.A
 	u.CreatedOn = time.Now()
 	u.UpdatedAt = time.Now()
 	u.ID = uid.String()
-	if result := r.DB.FirstOrCreate(&u, u); result.Error != nil {
-		log.Printf("Could not create a user with email: %v. Reason: %v\n", u.Email, result.Error)
-		affordAbodeErr := errors.NewConflict("email", u.Email)
-		return affordAbodeErr
+	u.Role = "user"
+
+	// if result := r.DB.FirstOrCreate(&u, u); result.Error != nil {
+	// 	log.Printf("Could not create a user with email: %v. Reason: %v\n", u.Email, result.Error)
+	// 	affordAbodeErr := errors.NewConflict("email", u.Email)
+	// 	return affordAbodeErr
+	// }
+
+	err := r.DB.Transaction(func(tx *gorm.DB) error {
+
+		userCreate := &UserCreate{
+			ID:        u.ID,
+			Email:     u.Email,
+			Username:  u.Username,
+			Password:  u.Password,
+			FirstName: u.FirstName,
+			LastName:  u.LastName,
+			Role:      u.Role,
+		}
+
+		if err := tx.Create(userCreate).Error; err != nil {
+			log.Printf("Could not create a user with email: %v. Reason: %v\n", u.Email, err)
+			// affordAbodeErr := errors.NewConflict("email", u.Email)
+			return err
+		}
+
+		metadata := &Metadata{
+			UserID:    u.ID,
+			CreatedOn: u.CreatedOn,
+			UpdatedAt: u.UpdatedAt,
+			DeletedAt: u.DeletedAt,
+		}
+
+		if err := tx.Create(&metadata).Error; err != nil {
+			log.Printf("Could not create metadata for user: %v. Reason: %v\n", u.Email, err)
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		log.Printf("Transaction failed: %v\n", err)
+		return errors.NewInternalServerError("Could not create user")
 	}
 
 	return nil

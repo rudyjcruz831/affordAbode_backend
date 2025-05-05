@@ -15,6 +15,7 @@ type UserService interface {
 	UpdateDetails(ctx context.Context, u *Users) *errors.AffordAbodeError
 	DeleteUser(ctx context.Context, id string) *errors.AffordAbodeError
 	GoogleSignin(ctx context.Context, code string) (*Users, *errors.AffordAbodeError)
+	Listing(ctx context.Context, l *Listing) ([]Listing, *errors.AffordAbodeError)
 }
 
 type UserRepository interface {
