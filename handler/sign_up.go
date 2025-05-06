@@ -14,8 +14,8 @@ type signupReq struct {
 	Email     string `json:"email" binding:"required,email"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
-	Username  string `json:"username" binding:"required"`
-	Password  string `json:"password" binding:"required,gte=6,lte=30"`
+	// Username  string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required,gte=6,lte=30"`
 }
 
 // Signup handler
@@ -32,8 +32,8 @@ func (h *Handler) SignUp(c *gin.Context) {
 
 	// inject user request to user to use for User service layer
 	u := &model.Users{
-		Email:     req.Email,
-		Username:  req.Username,
+		Email: req.Email,
+		// Username:  req.Username,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Password:  req.Password,
@@ -69,4 +69,28 @@ func (h *Handler) SignUp(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"tokens": tokens,
 	})
+
+	// Store tokens in cookies
+	if (data.tokens) {
+		Cookies.set('idToken', data.tokens.IDToken, { 
+			expires: 7, 
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'strict',
+			path: '/'
+		})
+		Cookies.set('refreshToken', data.tokens.RefreshToken, {
+			expires: 30, 
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'strict',
+			path: '/'
+		})
+	}
+	if (data.user) {
+		Cookies.set('userEmail', data.user.email, { expires: 7, path: '/' })
+		if (data.user.firstName) {
+			Cookies.set('userFirstName', data.user.firstName, { expires: 7, path: '/' })
+		}
+	}
+	// Redirect to dashboard
+	window.location.href = '/dashboard'
 }

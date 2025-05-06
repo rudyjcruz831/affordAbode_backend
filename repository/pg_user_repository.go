@@ -24,9 +24,9 @@ type Metadata struct {
 	DeletedAt *time.Time `json:"deleted_at"`
 }
 type UserCreate struct {
-	ID        string `json:"user_id" gorm:"column:user_id;primaryKey"`
-	Email     string `json:"email" binding:"required,email" gorm:"column:email;unique;not null"`
-	Username  string `json:"username" binding:"required" gorm:"column:username;unique;not null"`
+	ID    string `json:"user_id" gorm:"column:user_id;primaryKey"`
+	Email string `json:"email" binding:"required,email" gorm:"column:email;unique;not null"`
+	// Username  string `json:"username" binding:"required" gorm:"column:username;unique;not null"`
 	Password  string `json:"password" binding:"required,gte=6,lte=30" gorm:"column:password"`
 	FirstName string `json:"first_name" gorm:"column:first_name"`
 	LastName  string `json:"last_name" gorm:"column:last_name"`
@@ -80,9 +80,9 @@ func (r *pGUserRepository) Create(ctx context.Context, u *model.Users) *errors.A
 	err := r.DB.Transaction(func(tx *gorm.DB) error {
 
 		userCreate := &UserCreate{
-			ID:        u.ID,
-			Email:     u.Email,
-			Username:  u.Username,
+			ID:    u.ID,
+			Email: u.Email,
+			// Username:  u.Username,
 			Password:  u.Password,
 			FirstName: u.FirstName,
 			LastName:  u.LastName,

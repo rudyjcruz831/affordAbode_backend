@@ -4,9 +4,9 @@ import "time"
 
 // User ...
 type Users struct {
-	ID        string     `json:"user_id" gorm:"column:user_id;primary_key"`
-	Email     string     `json:"email" binding:"required,email" gorm:"column:email;unique;not null"`
-	Username  string     `json:"username" binding:"required" gorm:"column:username;unique;not null"`
+	ID    string `json:"user_id" gorm:"column:user_id;primary_key"`
+	Email string `json:"email" binding:"required,email" gorm:"column:email;unique;not null"`
+	// Username  string     `json:"username" binding:"required" gorm:"column:username;unique;not null"`
 	Password  string     `json:"-" binding:"required,gte=6,lte=30" gorm:"column:password"`
 	FirstName string     `json:"first_name" gorm:"column:first_name"`
 	LastName  string     `json:"last_name" gorm:"column:last_name"`
